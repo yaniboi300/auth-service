@@ -1,0 +1,35 @@
+services:
+  auth_db:
+    image: postgres:16-alpine
+    container_name: auth-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: auth_db
+    ports:
+      - "5435:5432" # Порт 5435, чтобы не конфликтовать с CRM (5433) и Notification (5434)
+    volumes:
+      - auth_pgdata:/var/lib/postgresql/data
+    networks:
+      - microservices-net
+
+  auth-app:
+    build: .
+    container_name: auth-app
+    env_file:
+      - .env
+    depends_on:
+      - auth_db
+    ports:
+      - "8002:8000" # Порт 8002 для Auth-сервиса
+    volumes:
+      - .:/app
+    networks:
+      - microservices-net
+
+networks:
+  microservices-net:
+    external: true
+
+volumes:
+  auth_pgdata:

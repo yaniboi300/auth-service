@@ -3,7 +3,10 @@ uvicorn[standard]
 sqlalchemy[asyncio]
 asyncpg
 pydantic-settings
+email-validator
 alembic
 pyjwt
 passlib[bcrypt]
 python-multipart
+pydantic_settings
+sqlalchemy
