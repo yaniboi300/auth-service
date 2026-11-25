@@ -1,11 +1,21 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
-
+from app.kafka_producer import start_producer, stop_producer
 from app.api.auth import router as auth_router
 from app.core.exceptions import AppError
 
 
-app = FastAPI(title="Auth Service")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Запускаем продюсера
+    await start_producer()
+    yield
+    # Останавливаем при выключении
+    await stop_producer()
+
+
+app = FastAPI(title="Auth Service", lifespan=lifespan)
 app.include_router(auth_router)
 
 

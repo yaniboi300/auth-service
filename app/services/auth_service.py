@@ -7,6 +7,7 @@ from app.core.config import Settings
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.security import create_access_token, get_password_hash, verify_password
 from app.core.exceptions import ConflictError, UnauthorizedError
+from app.kafka_producer import send_event
 
 class AuthService:
 
@@ -31,6 +32,16 @@ class AuthService:
             # simultaneous registrations with the same email.
             await self.session.rollback()
             raise ConflictError("User with this email already exists") from exc
+        
+        await send_event(
+                    topic="user.registered",
+                    payload={
+                        "event_type": "user.registered",
+                        "user_id": str(user.id), 
+                        "email": user.email
+                    }
+                )
+
         return user
 
     async def login_user(self, *, email: str, password: str) -> tuple[User, str]:
